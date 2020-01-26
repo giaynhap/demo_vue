@@ -1,45 +1,70 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="home">
+     <b-carousel
+      id="carousel-1"
+      v-model="slide"
+      :interval="4000"
+      controls
+      indicators
+      background="#ababab"
+      img-width="1024"
+      img-height="480"
+      style="text-shadow: 1px 1px 2px #333;"
+      @sliding-start="onSlideStart"
+      @sliding-end="onSlideEnd"
+    >
+      <b-carousel-slide v-for="(data,index) in slides" :key="index"
+        :caption="data.title"
+        :text="data.detail"
+        :img-src="data.image"
+      ></b-carousel-slide>
+
+       
+
+ 
+    </b-carousel>
+     <b-jumbotron :header="pageFullName" :lead="pageDetail">
+      <p></p>
+      <b-button variant="primary" href="#">Đặt câu hỏi tư vấn</b-button>
+    </b-jumbotron>
+
   </div>
 </template>
 
-<script>
+<script> 
+
+import ApiService from "../service/ApiService"
+
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  data(){
+    return {
+      slides:[],
+      pageTitle: "DefaultName",
+      pageFullName:"Default Name",
+      pageDetail:"Page Description"
+    }
+  },
+  created(){
+  this.slideSub = ApiService.getSlide().subscribe(m=>{
+        this.slides = m.data
+    })
+  this.pageOptSub = ApiService.getPageOption().subscribe(m=>{
+        this.pageTitle = m.data.filter(m=>m.code=="pagename").shift().value
+        this.pageFullName = m.data.filter(m=>m.code=="fullname").shift().value
+        this.pageDetail = m.data.filter(m=>m.code=="pagedetail").shift().value
+    })
+  },
+  beforeDestroy(){
+      this.pageOptSub.unsubscribe();
+      this.slideSub.unsubscribe();
   }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+ 
 <style scoped>
 h3 {
   margin: 40px 0 0;
